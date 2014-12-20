@@ -16,6 +16,8 @@
  * specific language governing permissions and limitations
  * under the License.
  */
+
+var rootUrl = 'http://7c8efdf2.ngrok.com'; 
 var app = {
   // Application Constructor
   initialize: function() {
@@ -52,7 +54,7 @@ var app = {
   initPaymentUI: function() {
     var clientIDs = {
       "PayPalEnvironmentProduction": "AaHStRCheAnmoCT2nhk7HUreN70_ERBvO-75hQzmG_MLI98ISEX9iWFmGLzh",
-      "PayPalEnvironmentSandbox": "EN3whxCyg-hQeeMxxXlmunXHbno_OtqVpuJpeJFYAbZEbE8xav2ugJvqTMgr"
+      "PayPalEnvironmentSandbox": "AaHStRCheAnmoCT2nhk7HUreN70_ERBvO-75hQzmG_MLI98ISEX9iWFmGLzh"
     };
     PayPalMobile.init(clientIDs, app.onPayPalMobileInit);
 
@@ -60,59 +62,62 @@ var app = {
   onSuccesfulPayment: function(payment) {
     console.log("payment success: " + JSON.stringify(payment, null, 4));
     $j.ajax({
-      type: 'PUT',
-      url: 'http://localhost:8000/api/v1/payment/1/capture/',
-      data: data,
-      success: function(data, textStatus, jqXHR) {
-                        // Your processing of the data here.
-                        console.log(data);
-                    },
-      contentType:'application/json',
-      dataType: 'application/json',
-      processData: false,
-    });
+           url: rootUrl + '/api/v1/payment/1/',
+           type: 'PUT',
+           data: JSON.stringify(payment, null, 4),
+           dataType: 'json',
+           contentType: 'application/json',
+            success: function(data) {
+                 console.log(data);
+            }
+         });
   },
   onAuthorizationCallback: function(authorization) {
     console.log("authorization: " + JSON.stringify(authorization, null, 4));
-    $j.ajax({
-      type: 'PUT',
-      url: 'http://localhost:8000/api/v1/payment/1/capture/',
-      data: JSON.stringify(authorization, null, 4),
-      success: function(data, textStatus, jqXHR) {
-                        // Your processing of the data here.
-                        console.log(data);
-                    },
-      contentType:'application/json',
-      dataType: 'application/json',
-      processData: false,
-    });
+    // $j.ajax({
+    //        url: rootUrl + '/api/v1/payment/1/',
+    //        type: 'PUT',
+    //        data: authorization,
+    //        dataType: 'json',
+    //        contentType: 'application/json',
+    //         success: function(data) {
+    //              console.log(data);
+    //         }
+    //      });
 
-    alert(PayPalMobile.getApplicationCorrelationId(this));
+    $j.ajax({
+           url: rootUrl + '/api/v1/payment/1/',
+           type: 'PUT',
+           data: JSON.stringify(authorization, null, 4),
+           dataType: 'json',
+           contentType: 'application/json',
+            success: function(data) {
+                 console.log(data);
+            }
+         });
+
   },
   createPayment: function() {
     // for simplicity use predefined amount
-    var paymentDetails = new PayPalPaymentDetails("50.00", "0.00", "0.00");
-    var payment = new PayPalPayment("50.00", "USD", "Awesome Sauce", "Sale",
+    var paymentDetails = new PayPalPaymentDetails("100.00", "0.00", "0.00");
+    var payment = new PayPalPayment("100.00", "USD", "Plata Order ID 2", "Authorize",
       paymentDetails);
     return payment;
   },
   configuration: function() {
     // for more options see `paypal-mobile-js-helper.js`
     var config = new PayPalConfiguration({
-      merchantName: "Plata Shop",
+      merchantName: "My Plata shop",
       merchantPrivacyPolicyURL: "http://localhost:8000/policy",
       merchantUserAgreementURL: "http://localhost:8000/agreement"
     });
     return config;
   },
   onPrepareRender: function() {
-    // buttons defined in index.html
-    //  <button id="buyNowBtn"> Buy Now !</button>
-    //  <button id="buyInFutureBtn"> Pay in Future !</button>
-    //  <button id="profileSharingBtn"> ProfileSharing !</button>
     var buyNowBtn = document.getElementById("buyNowBtn");
     var buyInFutureBtn = document.getElementById("buyInFutureBtn");
     var profileSharingBtn = document.getElementById("profileSharingBtn");
+    var postBtn = document.getElementById("postBtn");
 
     buyNowBtn.onclick = function(e) {
       // single payment
@@ -126,11 +131,28 @@ var app = {
         .onUserCanceled);
     };
 
+    postBtn.onclick = function(e) {
+        $j.ajax({
+           url: rootUrl + '/api/v1/payment/1/',
+           type: 'GET',
+           dataType: 'json',
+            success: function(data) {
+                 console.log(data);
+            }
+         });
+    };
+
+    profileSharingBtn.onclick = function(e) {
+      // profile sharing
+      PayPalMobile.renderProfileSharingUI(["profile", "email", "phone",
+        "address", "futurepayments", "paypalattributes"
+      ], app.onAuthorizationCallback, app.onUserCanceled);
+    };
   },
   onPayPalMobileInit: function() {
     // must be called
     // use PayPalEnvironmentNoNetwork mode to get look and feel of the flow
-    PayPalMobile.prepareToRender("PayPalEnvironmentNoNetwork", app.configuration(),
+    PayPalMobile.prepareToRender("PayPalEnvironmentSandbox", app.configuration(),
       app.onPrepareRender);
   },
   onUserCanceled: function(result) {
