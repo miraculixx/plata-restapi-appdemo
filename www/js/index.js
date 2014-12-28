@@ -17,7 +17,7 @@
  * under the License.
  */
 
-var rootUrl = 'http://7c8efdf2.ngrok.com'; 
+var rootUrl = 'http://8b38ee8.ngrok.com'; 
 var app = {
   // Application Constructor
   initialize: function() {
@@ -62,7 +62,7 @@ var app = {
   onSuccesfulPayment: function(payment) {
     console.log("payment success: " + JSON.stringify(payment, null, 4));
     $j.ajax({
-           url: rootUrl + '/api/v1/payment/1/',
+           url: rootUrl + '/api/v1/payment/1/?username=admin&api_key=53bf26edd8fc0252db480c746cfe995e1facb928',
            type: 'PUT',
            data: JSON.stringify(payment, null, 4),
            dataType: 'json',
@@ -86,8 +86,8 @@ var app = {
     //      });
 
     $j.ajax({
-           url: rootUrl + '/api/v1/payment/1/',
-           type: 'PUT',
+           url: rootUrl + '/api/v1/payment/1/approval/?username=admin&api_key=53bf26edd8fc0252db480c746cfe995e1facb928',
+           type: 'POST',
            data: JSON.stringify(authorization, null, 4),
            dataType: 'json',
            contentType: 'application/json',
